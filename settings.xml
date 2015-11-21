@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<settings>
+    <days>10</days>
+    <companies_per_day>2</companies_per_day>
+    <products_at_time>3</products_at_time>
+    <customers_per_day>2</customers_per_day>
+</settings>
