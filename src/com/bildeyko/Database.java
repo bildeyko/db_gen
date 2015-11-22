@@ -1,8 +1,16 @@
 package com.bildeyko;
 
+import com.bildeyko.objects.Company;
+import com.bildeyko.objects.Product;
+import com.bildeyko.objects.ProductType;
+import com.bildeyko.objects.Unit;
+import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.pool.OracleDataSource;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by bilde_000 on 22.11.2015.
@@ -37,17 +45,7 @@ public class Database {
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-
-               /* String coffeeName = rs.getString("COF_NAME");
-                int supplierID = rs.getInt("SUP_ID");
-                float price = rs.getFloat("PRICE");
-                int sales = rs.getInt("SALES");
-                int total = rs.getInt("TOTAL");
-                System.out.println(coffeeName + "\t" + supplierID +
-                        "\t" + price + "\t" + sales +
-                        "\t" + total);*/
                 String name = rs.getString("NAME");
-                System.out.println("name : " + name);
             }
         } catch (SQLException e ) {
             System.out.println(e.getMessage());
@@ -90,5 +88,130 @@ public class Database {
 
         return dbConnection;
 
+    }
+
+    public void InsertCompanies(ArrayList<Company> list) throws SQLException {
+        PreparedStatement ps = con.prepareStatement("insert into COMPANIES values (?, ?, ?, ?)");
+        ((OraclePreparedStatement)ps).setExecuteBatch (list.size());
+
+        Iterator<Company> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            Company buf = listIterator.next();
+            ps.setBigDecimal(1, new BigDecimal(buf.tin));
+            ps.setString(2, buf.name);
+            ps.setInt(3, buf.postCode);
+            ps.setString(4, buf.address);
+            ps.executeUpdate();
+        }
+
+        ((OraclePreparedStatement)ps).sendBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public void InsertUnits(ArrayList<Unit> list) throws SQLException {
+        PreparedStatement ps = con.prepareStatement("insert into UNITS(NAME, SHORT_NAME) values (?, ?)");
+        ((OraclePreparedStatement)ps).setExecuteBatch (list.size());
+
+        Iterator<Unit> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            Unit buf = listIterator.next();
+            ps.setString(1, buf.name);
+            ps.setString(2, buf.short_name);
+            ps.executeUpdate();
+        }
+
+        ((OraclePreparedStatement)ps).sendBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public void InsertProductTypes(ArrayList<ProductType> list) throws SQLException {
+        System.out.println("InsertProductTypes");
+        PreparedStatement ps = con.prepareStatement("insert into PRODUCT_TYPES(NAME, UNITS) values (?, ?)");
+        ((OraclePreparedStatement)ps).setExecuteBatch (list.size());
+
+        Iterator<ProductType> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            ProductType buf = listIterator.next();
+            ps.setString(1, buf.name);
+            ps.setInt(2, buf.unitId);
+            ps.executeUpdate();
+        }
+
+        ((OraclePreparedStatement)ps).sendBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public void insertProducts(ArrayList<Product> list) throws SQLException {
+        System.out.println("insertProducts");
+        PreparedStatement ps = con.prepareStatement("insert into PRODUCTS(BARCODE, NAME, TYPE) values (?, ?, ?)");
+        ((OraclePreparedStatement)ps).setExecuteBatch (list.size());
+
+        Iterator<Product> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            Product buf = listIterator.next();
+            ps.setBigDecimal(1, new BigDecimal(buf.barcode));
+            ps.setString(2, buf.name);
+            ps.setInt(3, buf.type.typeId);
+            ps.executeUpdate();
+        }
+
+        ((OraclePreparedStatement)ps).sendBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public Integer getUnitId(String fullName) throws SQLException {
+        System.out.println("getUnitId");
+        Statement stmt = null;
+        String query = "select UNITS.UNIT_ID " +
+                "from UNITS " +
+                "WHERE UNITS.NAME = " + niceStr(fullName);
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                Integer id = rs.getInt("UNIT_ID");
+                return id;
+            }
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return 0;
+    }
+
+    public ArrayList<ProductType> getProductTypes() throws SQLException {
+        System.out.println("getProductTypes");
+
+        Statement stmt = null;
+        String query = "SELECT * " +
+                "FROM PRODUCT_TYPES ";
+
+        ArrayList<ProductType> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new ProductType(rs.getInt("TYPE_ID"), rs.getString("NAME"), rs.getInt("UNITS")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
+    }
+
+    private String niceStr(String s) {
+        return "'"+s+"'";
     }
 }

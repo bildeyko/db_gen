@@ -15,6 +15,10 @@ import java.io.File;
 public class Settings {
     private String fileName;
 
+    public Integer getCompanies() {
+        return companies;
+    }
+
     private Integer companies;
 
     private Integer days;
