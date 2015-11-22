@@ -1,10 +1,9 @@
 package com.bildeyko;
 
-import com.bildeyko.objects.Company;
-import com.bildeyko.objects.Product;
-import com.bildeyko.objects.ProductType;
-import com.bildeyko.objects.Unit;
+import com.bildeyko.objects.*;
 import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleTypes;
+import oracle.jdbc.oracore.OracleType;
 import oracle.jdbc.pool.OracleDataSource;
 
 import java.math.BigDecimal;
@@ -165,6 +164,65 @@ public class Database {
         con.commit();
 
         ps.close();
+    }
+
+
+    public void insertPositionTypes(ArrayList<PositionType> list) throws SQLException {
+        System.out.println("insertPositionTypes");
+        PreparedStatement ps = con.prepareStatement("insert into POSITION_TYPES(PERCENT, NAME) values (?, ?)");
+        ((OraclePreparedStatement)ps).setExecuteBatch (list.size());
+
+        Iterator<PositionType> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            PositionType buf = listIterator.next();
+            ps.setDouble(1, buf.percent);
+            ps.setString(2, buf.name);
+            ps.executeUpdate();
+        }
+
+        ((OraclePreparedStatement)ps).sendBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public Integer insertPerson(Person person) throws SQLException {
+        String command = "{call BEGIN INSERT INTO PEOPLE (NAME, SURNAME) VALUES (?,?) RETURNING PERSON_ID INTO ? ; END;}";
+
+        CallableStatement statement = con.prepareCall(command);
+        statement.setString(1, person.name);
+        statement.setString(2, person.surname);
+        statement.registerOutParameter( 3, Types.INTEGER );
+
+        int i = statement.executeUpdate();
+        if (i > 0) // Update count
+            return statement.getInt(3);
+        return 0;
+    }
+
+    public Integer insertPeople(ArrayList<Person> list) throws SQLException {
+        System.out.println("insertPeople");
+        PreparedStatement ps = con.prepareStatement("insert into PEOPLE(NAME, SURNAME) values (?, ?)", new String[]{"PERSON_ID"});
+
+        Iterator<Person> listIterator = list.listIterator();
+        while (listIterator.hasNext()) {
+            Person buf = listIterator.next();
+            ps.setString(1, buf.name);
+            ps.setString(2, buf.surname);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ResultSet rs = ps.getGeneratedKeys();
+        ArrayList<Long> ids = new ArrayList<>();
+        while(rs.next()) {
+            ids.add(rs.getLong(1));
+        }
+
+        ps.close();
+        return 0;
     }
 
     public Integer getUnitId(String fullName) throws SQLException {

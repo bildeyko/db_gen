@@ -1,9 +1,6 @@
 package com.bildeyko;
 
-import com.bildeyko.objects.Company;
-import com.bildeyko.objects.Product;
-import com.bildeyko.objects.ProductType;
-import com.bildeyko.objects.Unit;
+import com.bildeyko.objects.*;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -47,7 +44,19 @@ public class Generator {
             System.out.println(e.getMessage());
         }
 
-        //InsertProducts();
+
+        ArrayList<Person> c3 = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            c3.add(new Person());
+        }
+        try {
+            db.insertPeople(c3);
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
+
+        //InsertPositionTypes();
         System.out.println("Date : " + startDate.toString());
     }
 
@@ -179,6 +188,19 @@ public class Generator {
 
         try {
             db.insertProducts(products);
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void InsertPositionTypes() {
+        ArrayList<PositionType> types = new ArrayList<>();
+        types.add(new PositionType("менеджер", 5.00));
+        types.add(new PositionType("брокер", 5.00));
+        types.add(new PositionType("доставщик", 2.00));
+        try {
+            db.insertPositionTypes(types);
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
