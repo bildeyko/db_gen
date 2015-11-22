@@ -16,12 +16,20 @@ public class Settings {
     private String fileName;
 
     private Integer companies;
+
     private Integer days;
     private Integer products;
     private Integer customers;
 
+    public DB_settings getDatabase() {
+        return database;
+    }
+
+    private DB_settings database;
+
     public Settings(String fileName) {
         this.fileName = fileName;
+        database = new DB_settings();
     }
 
     public void load() {
@@ -40,9 +48,21 @@ public class Settings {
             this.products = Integer.parseInt(getString("products_at_time",rootElement));
             this.customers = Integer.parseInt(getString("customers_per_day",rootElement));
 
+            database.host = getString("host",rootElement);
+            database.port = Integer.parseInt(getString("port", rootElement));
+            database.serviceName = getString("service_name",rootElement);
+            database.user = getString("user",rootElement);
+            database.password = getString("password",rootElement);
+
+           // System.out.println("Ok : ");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Integer getDays() {
+        return days;
     }
 
     private String getString(String tagName, Element element) {
@@ -56,5 +76,13 @@ public class Settings {
         }
 
         return null;
+    }
+
+    public class DB_settings {
+        public String host;
+        public Integer port;
+        public String serviceName;
+        public String user;
+        public String password;
     }
 }

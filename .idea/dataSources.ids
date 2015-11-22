@@ -13,7 +13,13 @@
     <table name="BATCHES" schema="C##BILDEYKO" catalog="" type="TABLE"/>
     <table name="BATCH_ITEMS" schema="C##BILDEYKO" catalog="" type="TABLE"/>
     <table name="BETS" schema="C##BILDEYKO" catalog="" type="TABLE"/>
-    <table name="COMPANIES" schema="C##BILDEYKO" catalog="" type="TABLE"/>
+    <table name="COMPANIES" schema="C##BILDEYKO" catalog="" type="TABLE">
+      <column name="TIN" sqlType="NUMBER" precision="10" scale="0" nullable="false" jdbcType="3"/>
+      <column name="NAME" sqlType="VARCHAR2" precision="255" scale="0" nullable="false" jdbcType="12"/>
+      <column name="POSTCODE" sqlType="NUMBER" precision="8" scale="0" nullable="false" jdbcType="3"/>
+      <column name="ADDRESS" sqlType="VARCHAR2" precision="255" scale="0" nullable="false" jdbcType="12"/>
+      <primary-key name="SYS_C0011561" columns="TIN"/>
+    </table>
     <table name="CONTRACTS" schema="C##BILDEYKO" catalog="" type="TABLE"/>
     <table name="CUSTOMERS" schema="C##BILDEYKO" catalog="" type="TABLE"/>
     <table name="DELIVERY" schema="C##BILDEYKO" catalog="" type="TABLE"/>

@@ -1,9 +1,8 @@
 package com.bildeyko;
 
 public class Main {
-    private static Settings settings;
+    private static Generator gen;
     public static void main(String[] args) {
-	    settings = new Settings("settings.xml");
-        settings.load();
+	    gen = new Generator();
     }
 }
