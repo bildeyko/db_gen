@@ -1,5 +1,7 @@
 package com.bildeyko.objects;
 
+import com.bildeyko.Tools;
+
 import java.math.BigInteger;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -14,33 +16,11 @@ public class Company {
     public String address;
 
     public Company() {
-        tin = randomBigInt(new BigInteger("1000000000"), new BigInteger("9999999999"));
-        name = generateString(30);
+        tin = Tools.randomBigInt(new BigInteger("1000000000"), new BigInteger("9999999999"));
+        name = Tools.generateString(30);
         postCode = ThreadLocalRandom.current().nextInt(10000000, 99999999+1);
 
-        address = generateString(120);
+        address = Tools.generateString(120);
         //ThreadLocalRandom.current().nextInt(min, max + 1);
-    }
-
-    public static BigInteger randomBigInt(BigInteger min, BigInteger max) {
-        BigInteger sub = max.subtract(min);
-        Random rnd = new Random();
-        do {
-            BigInteger i = new BigInteger(sub.bitLength(), rnd);
-            if (i.compareTo(sub) <= 0)
-                return i.add(min);
-        } while (true);
-    }
-
-    public static String generateString(int length)
-    {
-        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        Random rnd = new Random();
-        char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(rnd.nextInt(characters.length()));
-        }
-        return new String(text);
     }
 }

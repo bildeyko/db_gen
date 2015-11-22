@@ -47,7 +47,7 @@ public class Generator {
             System.out.println(e.getMessage());
         }
 
-        InsertProducts();
+        //InsertProducts();
         System.out.println("Date : " + startDate.toString());
     }
 
