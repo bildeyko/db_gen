@@ -45,7 +45,7 @@ public class Generator {
         }
 
 
-        ArrayList<Person> c3 = new ArrayList<>();
+       /* ArrayList<Person> c3 = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             c3.add(new Person());
         }
@@ -54,9 +54,14 @@ public class Generator {
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
-        }
+        }*/
 
-        //InsertPositionTypes();
+        /*InsertUnits();
+        InsertProductTypes();
+        InsertProducts();
+        InsertPositionTypes();*/
+
+        InsertStaff_by_type("менеджер", 10);
         System.out.println("Date : " + startDate.toString());
     }
 
@@ -201,6 +206,26 @@ public class Generator {
         types.add(new PositionType("доставщик", 2.00));
         try {
             db.insertPositionTypes(types);
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void InsertStaff_by_type(String type, Integer num) {
+        Integer id;
+        ArrayList<Staff> people = new ArrayList<>();
+        try {
+            id = db.getPosTypeId(type);
+
+            for (int i = 0; i < num; i++) {
+                people.add(new Staff(id,startDate));
+            }
+            people = (ArrayList<Staff>)db.insertPeople(people);
+            System.out.println("Date : " + startDate.toString());
+
+           people = db.insertStaff(people);
+           db.insertPositions(people);
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
