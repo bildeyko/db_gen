@@ -27,4 +27,8 @@ public class Staff extends Person {
 
         snils = Tools.randomBigInt(new BigInteger("10000000000"), new BigInteger("99999999999"));
     }
+
+    public Staff(Long staffId) {
+        this.staffId = staffId;
+    }
 }

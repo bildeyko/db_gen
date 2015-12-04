@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by Nick Bildeyko on 21.11.2015.
@@ -61,9 +62,9 @@ public class Generator {
         InsertProductTypes();
         InsertProducts();
         InsertPositionTypes();
-        insertStates();*/
+        insertStates();
 
-        /*InsertStaff_by_type("менеджер", 3);
+        InsertStaff_by_type("менеджер", 3);
         InsertStaff_by_type("брокер", 3);
         InsertStaff_by_type("доставщик", 3);*/
 
@@ -253,9 +254,12 @@ public class Generator {
         LocalDateTime date = startDate.minusDays(days).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Integer currentDay = 1;
         ArrayList<Product> products = null;
+        ArrayList<Staff> brokers = null;
+        Random rand = new Random();
 
         try {
             products = db.getProducts();
+            brokers = db.getStaff("брокер");
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
@@ -306,8 +310,6 @@ public class Generator {
                 catch (SQLException e ) {
                     System.out.println(e.getMessage());
                 }
-
-                System.out.println("Nice");
             }
 
             /*
@@ -322,13 +324,30 @@ public class Generator {
             try {
                 customers = (ArrayList<Customer>)db.insertPeople(customers);
                 db.insertCustomers(customers);
+
+                customers = db.getCustomers();
+                customers = Tools.generateRandomArray(customers, 0.1);
+
+                //ArrayList<Staff> brokers_rand = Tools.generateRandomArray(brokers, 0.2);
+
+                ArrayList<Contract> contracts = new ArrayList<>();
+
+                for(Customer buf: customers) {
+                    Integer index = rand.nextInt(brokers.size());
+                    Staff item = brokers.get(index);
+                    contracts.add(new Contract(buf.customer_id,item.staffId,date));
+                }
+                db.insertContacts(contracts);
+
+                System.out.println("Nice");
+
             }
             catch (SQLException e ) {
                 System.out.println(e.getMessage());
             }
 
-
             currentDay ++;
+            date = date.plusDays(1);
 
         }
 

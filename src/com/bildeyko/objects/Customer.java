@@ -17,4 +17,11 @@ public class Customer extends Person {
         postCode = ThreadLocalRandom.current().nextInt(10000000, 99999999+1);
         address = Tools.generateString(120);
     }
+
+    public Customer(Long customer_id, Long personId, Integer postCode, String address) {
+        this.customer_id = customer_id;
+        this.postCode = postCode;
+        this.address = address;
+        this.personId = personId;
+    }
 }

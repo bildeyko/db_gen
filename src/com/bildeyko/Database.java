@@ -302,13 +302,32 @@ public class Database {
     }
 
     public void insertCustomers(ArrayList<Customer> list) throws SQLException {
-        System.out.println("insertProduct_items");
+        System.out.println("insertCustomers");
         PreparedStatement ps = con.prepareStatement("insert into CUSTOMERS(PERSON_ID, POSTCODE, ADDRESS) values (?, ?, ?)");
 
         for (Customer buf: list) {
             ps.setLong(1, buf.personId);
             ps.setInt(2, buf.postCode);
             ps.setString(3, buf.address);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public void insertContacts(ArrayList<Contract> list) throws SQLException {
+        System.out.println("insertCustomers");
+        PreparedStatement ps = con.prepareStatement("insert into CONTRACTS(CUSTOMER_ID, BROKER_ID, START_TIME, END_TIME, LIMIT_PER_AUCTION) values (?, ?, ?, ?, ?)");
+
+        for (Contract buf: list) {
+            ps.setLong(1, buf.customerId);
+            ps.setLong(2, buf.brokerId);
+            ps.setTimestamp(3, new Timestamp(buf.startTime.getTime()));
+            ps.setTimestamp(4, new Timestamp(buf.endTime.getTime()));
+            ps.setDouble(5, buf.limit);
             ps.addBatch();
         }
 
@@ -421,6 +440,54 @@ public class Database {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 list.add(new Company(rs.getBigDecimal("TIN").toBigInteger(), rs.getString("NAME"), rs.getInt("POSTCODE"), rs.getString("ADDRESS")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
+    }
+
+    public ArrayList<Customer> getCustomers() throws SQLException {
+        System.out.println("getCustomers");
+
+        Statement stmt = null;
+        String query = "SELECT * " +
+                "FROM CUSTOMERS ";
+
+        ArrayList<Customer> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new Customer(rs.getLong("CUSTOMER_ID"), rs.getLong("PERSON_ID"), rs.getInt("POSTCODE"), rs.getString("ADDRESS")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
+    }
+
+    public ArrayList<Staff> getStaff(String type) throws SQLException {
+        System.out.println("getCustomers");
+
+        Statement stmt = null;
+        String query = "SELECT STAFF.* " +
+                "FROM STAFF, POSITIONS, POSITION_TYPES " +
+                "WHERE STAFF.STAFF_ID=POSITIONS.STAFF_ID AND POSITIONS.POSITION_TYPE_ID = POSITION_TYPES.POSITION_TYPE_ID " +
+                "AND POSITION_TYPES.NAME = " + niceStr(type);
+
+        ArrayList<Staff> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new Staff(rs.getLong("STAFF_ID")));
             }
             return list;
         } catch (SQLException e ) {
