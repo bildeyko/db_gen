@@ -18,6 +18,9 @@ public class Product_item {
     public Double quantity;
     public Double price;
 
+    public Double sum;
+    public Integer type;
+
     public Product_item(BigInteger tin, Integer productId, LocalDateTime currentTime) {
         this.tin = tin;
         this.productId = productId;
@@ -29,5 +32,12 @@ public class Product_item {
 
         quantity = (double)(rand.nextInt(1000)+1);
         price = rand.nextDouble()*1000;
+    }
+
+    public Product_item(BigInteger itemId, Double quantity, Integer type, Double sum) {
+        this.itemId = itemId;
+        this.quantity = quantity;
+        this.type = type;
+        this.sum = sum;
     }
 }

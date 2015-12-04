@@ -11,4 +11,5 @@
     <companies_per_day>3</companies_per_day>
     <products_at_time>3</products_at_time>
     <customers_per_day>2</customers_per_day>
+    <max_batch_size>5</max_batch_size>
 </settings>

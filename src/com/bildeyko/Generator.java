@@ -255,11 +255,13 @@ public class Generator {
         Integer currentDay = 1;
         ArrayList<Product> products = null;
         ArrayList<Staff> brokers = null;
+        ArrayList<Staff> menegers = null;
         Random rand = new Random();
 
         try {
             products = db.getProducts();
             brokers = db.getStaff("брокер");
+            menegers = db.getStaff("менеджер");
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
@@ -328,8 +330,6 @@ public class Generator {
                 customers = db.getCustomers();
                 customers = Tools.generateRandomArray(customers, 0.1);
 
-                //ArrayList<Staff> brokers_rand = Tools.generateRandomArray(brokers, 0.2);
-
                 ArrayList<Contract> contracts = new ArrayList<>();
 
                 for(Customer buf: customers) {
@@ -346,10 +346,57 @@ public class Generator {
                 System.out.println(e.getMessage());
             }
 
+            /*
+                Add batches
+            */
+
+            ArrayList<Staff> menegersRand = Tools.generateRandomArray(menegers, 0.5);
+            try {
+                for(Staff buf: menegersRand) {
+                    ArrayList<Product_item> items = db.getProductItems();
+
+                    Integer index = rand.nextInt(items.size());
+                    Product_item item = items.get(index);
+
+                    Batch batch = new Batch(buf.staffId, item.type.longValue(), date);
+                    Long batchId = db.insertBatch(batch);
+
+                    int num = rand.nextInt(settings.getBatchSize()) +1;
+                    ArrayList<Batch_item> newItems = selectProdItems(items, batchId, num,item.type);
+                    db.insertBatch_items(newItems);
+                }
+
+            }
+            catch (SQLException e ) {
+                System.out.println(e.getMessage());
+            }
+
             currentDay ++;
             date = date.plusDays(1);
 
         }
 
+    }
+
+    private ArrayList<Batch_item> selectProdItems(ArrayList<Product_item> items, Long batchId, Integer num, Integer type) {
+        int i = 0;
+        ArrayList<Batch_item> res = new ArrayList<>();
+        Random rand = new Random();
+
+        for(Product_item buf: items) {
+            if (buf.type == type ) {
+                Double diff = buf.quantity - buf.sum;
+                Double quantity;
+                if (diff < 50)
+                    quantity = diff;
+                else
+                    quantity = 1 + (diff - 1) * rand.nextDouble();
+                res.add(new Batch_item(batchId,buf.itemId,quantity));
+                i ++;
+                if(i >= num)
+                    break;
+            }
+        }
+        return res;
     }
 }

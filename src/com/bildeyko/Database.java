@@ -319,7 +319,7 @@ public class Database {
     }
 
     public void insertContacts(ArrayList<Contract> list) throws SQLException {
-        System.out.println("insertCustomers");
+        System.out.println("insertContacts");
         PreparedStatement ps = con.prepareStatement("insert into CONTRACTS(CUSTOMER_ID, BROKER_ID, START_TIME, END_TIME, LIMIT_PER_AUCTION) values (?, ?, ?, ?, ?)");
 
         for (Contract buf: list) {
@@ -328,6 +328,46 @@ public class Database {
             ps.setTimestamp(3, new Timestamp(buf.startTime.getTime()));
             ps.setTimestamp(4, new Timestamp(buf.endTime.getTime()));
             ps.setDouble(5, buf.limit);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
+
+    public Long insertBatch(Batch batch) throws SQLException {
+        System.out.println("insertBatch");
+        PreparedStatement ps = con.prepareStatement("insert into BATCHES(STAFF_ID, TYPE_ID, BUILD_DATE) values (?, ?, ?)", new String[]{"BATCH_ID"});
+
+        ps.setLong(1, batch.staffId);
+        ps.setLong(2, batch.typeId);
+        ps.setTimestamp(3, new Timestamp(batch.buildTime.getTime()));
+        ps.addBatch();
+
+        ps.executeBatch();
+        con.commit();
+
+        ResultSet rs = ps.getGeneratedKeys();
+
+        Long id = null;
+        while(rs.next()) {
+            id = rs.getLong(1);
+        }
+
+        ps.close();
+        return id;
+    }
+
+    public void insertBatch_items(ArrayList<Batch_item> list) throws SQLException {
+        System.out.println("insertBatch_items");
+        PreparedStatement ps = con.prepareStatement("insert into BATCH_ITEMS(PRODITEM_ID, BATCH_ID, QUANTITY) values (?, ?, ?)");
+
+        for (Batch_item buf: list) {
+            ps.setBigDecimal(1, new BigDecimal(buf.itemId));
+            ps.setLong(2, buf.batchId);
+            ps.setDouble(3, buf.quantity);
             ps.addBatch();
         }
 
@@ -488,6 +528,34 @@ public class Database {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 list.add(new Staff(rs.getLong("STAFF_ID")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
+    }
+
+    public ArrayList<Product_item> getProductItems() throws  SQLException {
+        System.out.println("getProductItems");
+
+        Statement stmt = null;
+        String query = "SELECT PRODUCT_ITEMS.PRODITEM_ID, PRODUCT_ITEMS.QUANTITY, PRODUCTS.TYPE, COALESCE(d.sum,0) SUM " +
+                "FROM PRODUCTS, PRODUCT_ITEMS " +
+                "LEFT JOIN  (SELECT PRODITEM_ID, sum(QUANTITY) sum " +
+                "FROM BATCH_ITEMS " +
+                "GROUP BY PRODITEM_ID) d ON PRODUCT_ITEMS.PRODITEM_ID = d.PRODITEM_ID " +
+                "WHERE PRODUCT_ITEMS.PRODUCT_ID = PRODUCTS.PRODUCT_ID AND PRODUCT_ITEMS.SHELF_LIFE > sysdate " +
+                "AND (PRODUCT_ITEMS.QUANTITY > d.sum OR d.sum IS NULL)";
+
+        ArrayList<Product_item> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new Product_item(rs.getBigDecimal("PRODITEM_ID").toBigInteger(),rs.getDouble("QUANTITY"),rs.getInt("TYPE"),rs.getDouble("SUM")));
             }
             return list;
         } catch (SQLException e ) {

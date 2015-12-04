@@ -30,6 +30,12 @@ public class Settings {
 
     private Integer customers;
 
+    public Integer getBatchSize() {
+        return batchSize;
+    }
+
+    private Integer batchSize;
+
     public DB_settings getDatabase() {
         return database;
     }
@@ -56,6 +62,7 @@ public class Settings {
             this.days = Integer.parseInt(getString("days",rootElement));
             this.products = Integer.parseInt(getString("products_at_time",rootElement));
             this.customers = Integer.parseInt(getString("customers_per_day",rootElement));
+            this.batchSize = Integer.parseInt(getString("max_batch_size",rootElement));
 
             database.host = getString("host",rootElement);
             database.port = Integer.parseInt(getString("port", rootElement));
