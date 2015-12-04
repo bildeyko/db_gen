@@ -350,6 +350,7 @@ public class Generator {
                 Add batches
             */
 
+            ArrayList<Auction> auctions = new ArrayList<>();
             ArrayList<Staff> menegersRand = Tools.generateRandomArray(menegers, 0.5);
             try {
                 for(Staff buf: menegersRand) {
@@ -360,10 +361,13 @@ public class Generator {
 
                     Batch batch = new Batch(buf.staffId, item.type.longValue(), date);
                     Long batchId = db.insertBatch(batch);
+                    auctions.add(new Auction(batchId, date));
 
                     int num = rand.nextInt(settings.getBatchSize()) +1;
                     ArrayList<Batch_item> newItems = selectProdItems(items, batchId, num,item.type);
                     db.insertBatch_items(newItems);
+
+                    db.insertAuctions(auctions);
                 }
 
             }

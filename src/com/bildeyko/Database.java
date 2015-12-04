@@ -377,6 +377,23 @@ public class Database {
         ps.close();
     }
 
+    public void insertAuctions(ArrayList<Auction> list) throws SQLException {
+        System.out.println("insertAuctions");
+        PreparedStatement ps = con.prepareStatement("insert into AUCTIONS(BATCH_ID, START_TIME, END_TIME) values (?, ?, ?)");
+
+        for (Auction buf: list) {
+            ps.setLong(1, buf.batchId);
+            ps.setTimestamp(2, new Timestamp(buf.startTime.getTime()));
+            ps.setTimestamp(3, new Timestamp(buf.endTime.getTime()));
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
+
 
 
     public Integer getUnitId(String fullName) throws SQLException {
