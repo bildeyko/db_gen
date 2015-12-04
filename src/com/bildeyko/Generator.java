@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Arrays;
 
 /**
  * Created by Nick Bildeyko on 21.11.2015.
@@ -31,7 +32,7 @@ public class Generator {
             System.out.println(e.getMessage());
         }
 
-        Company c1 = new Company();
+        /*Company c1 = new Company();
         ArrayList<Company> c2 = new ArrayList<>(settings.getCompanies());
         for (int i = 0; i < settings.getCompanies(); i++) {
             c2.add(new Company());
@@ -42,7 +43,7 @@ public class Generator {
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
-        }
+        }*/
 
 
        /* ArrayList<Person> c3 = new ArrayList<>();
@@ -59,9 +60,14 @@ public class Generator {
         /*InsertUnits();
         InsertProductTypes();
         InsertProducts();
-        InsertPositionTypes();*/
+        InsertPositionTypes();
+        insertStates();*/
 
-        InsertStaff_by_type("менеджер", 10);
+        /*InsertStaff_by_type("менеджер", 3);
+        InsertStaff_by_type("брокер", 3);
+        InsertStaff_by_type("доставщик", 3);*/
+
+
         System.out.println("Date : " + startDate.toString());
     }
 
@@ -226,6 +232,16 @@ public class Generator {
 
            people = db.insertStaff(people);
            db.insertPositions(people);
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void insertStates() {
+        ArrayList<String> states = new ArrayList<>(Arrays.asList("ожидает", "доставлен", "доставляется", "зажержан"));
+        try {
+            db.insertStates(states);
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());

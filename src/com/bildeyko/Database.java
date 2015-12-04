@@ -138,6 +138,21 @@ public class Database {
         ps.close();
     }
 
+    public void insertStates(ArrayList<String> list) throws SQLException {
+        System.out.println("insertStates");
+        PreparedStatement ps = con.prepareStatement("insert into STATES(NAME) values (?)");
+
+        for (String buf: list) {
+            ps.setString(1, buf);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
+
     public void InsertProductTypes(ArrayList<ProductType> list) throws SQLException {
         System.out.println("InsertProductTypes");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCT_TYPES(NAME, UNITS) values (?, ?)");
@@ -310,6 +325,10 @@ public class Database {
         ps.close();
         return list;
     }
+
+
+
+
 
     public Integer getUnitId(String fullName) throws SQLException {
         System.out.println("getUnitId");
