@@ -7,6 +7,7 @@ import oracle.jdbc.oracore.OracleType;
 import oracle.jdbc.pool.OracleDataSource;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -92,15 +93,6 @@ public class Database {
     public void InsertCompanies(ArrayList<Company> list) throws SQLException {
         PreparedStatement ps = con.prepareStatement("insert into COMPANIES values (?, ?, ?, ?)");
 
-        /*Iterator<Company> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            Company buf = listIterator.next();
-            ps.setBigDecimal(1, new BigDecimal(buf.tin));
-            ps.setString(2, buf.name);
-            ps.setInt(3, buf.postCode);
-            ps.setString(4, buf.address);
-            ps.addBatch();
-        }*/
         for (Company buf: list) {
             ps.setBigDecimal(1, new BigDecimal(buf.tin));
             ps.setString(2, buf.name);
@@ -119,13 +111,6 @@ public class Database {
         System.out.println("InsertUnits");
         PreparedStatement ps = con.prepareStatement("insert into UNITS(NAME, SHORT_NAME) values (?, ?)");
 
-        /*Iterator<Unit> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            Unit buf = listIterator.next();
-            ps.setString(1, buf.name);
-            ps.setString(2, buf.short_name);
-            ps.addBatch();
-        }*/
         for (Unit buf: list) {
             ps.setString(1, buf.name);
             ps.setString(2, buf.short_name);
@@ -157,13 +142,6 @@ public class Database {
         System.out.println("InsertProductTypes");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCT_TYPES(NAME, UNITS) values (?, ?)");
 
-        /*Iterator<ProductType> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            ProductType buf = listIterator.next();
-            ps.setString(1, buf.name);
-            ps.setInt(2, buf.unitId);
-            ps.addBatch();
-        }*/
         for (ProductType buf: list) {
             ps.setString(1, buf.name);
             ps.setInt(2, buf.unitId);
@@ -180,14 +158,6 @@ public class Database {
         System.out.println("insertProducts");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCTS(BARCODE, NAME, TYPE) values (?, ?, ?)");
 
-        /*Iterator<Product> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            Product buf = listIterator.next();
-            ps.setBigDecimal(1, new BigDecimal(buf.barcode));
-            ps.setString(2, buf.name);
-            ps.setInt(3, buf.type.typeId);
-            ps.addBatch();
-        }*/
         for (Product buf: list) {
             ps.setBigDecimal(1, new BigDecimal(buf.barcode));
             ps.setString(2, buf.name);
@@ -206,13 +176,6 @@ public class Database {
         System.out.println("insertPositionTypes");
         PreparedStatement ps = con.prepareStatement("insert into POSITION_TYPES(PERCENT, NAME) values (?, ?)");
 
-        /*Iterator<PositionType> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            PositionType buf = listIterator.next();
-            ps.setDouble(1, buf.percent);
-            ps.setString(2, buf.name);
-            ps.addBatch();
-        }*/
         for (PositionType buf: list) {
             ps.setDouble(1, buf.percent);
             ps.setString(2, buf.name);
@@ -242,6 +205,25 @@ public class Database {
         ps.close();
     }
 
+    public void insertProduct_items(ArrayList<Product_item> list) throws SQLException {
+        System.out.println("insertProduct_items");
+        PreparedStatement ps = con.prepareStatement("insert into PRODUCT_ITEMS(TIN, PRODUCT_ID, SHELF_LIFE, QUANTITY, PRICE) values (?, ?, ?, ?, ?)");
+
+        for (Product_item buf: list) {
+            ps.setBigDecimal(1, new BigDecimal(buf.tin));
+            ps.setInt(2, buf.productId);
+            ps.setTimestamp(3, new Timestamp(buf.shelfLife.getTime()));
+            ps.setDouble(4, buf.quantity);
+            ps.setDouble(5, buf.price);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
+
     /*public Integer insertPerson(Person person) throws SQLException {
         String command = "{call BEGIN INSERT INTO PEOPLE (NAME, SURNAME) VALUES (?,?) RETURNING PERSON_ID INTO ? ; END;}";
 
@@ -260,13 +242,6 @@ public class Database {
         System.out.println("insertPeople");
         PreparedStatement ps = con.prepareStatement("insert into PEOPLE(NAME, SURNAME, DOB) values (?, ?, ?)", new String[]{"PERSON_ID"});
 
-        /*Iterator<Person> listIterator = list.listIterator();
-        while (listIterator.hasNext()) {
-            Person buf = listIterator.next();
-            ps.setString(1, buf.name);
-            ps.setString(2, buf.surname);
-            ps.addBatch();
-        }*/
         for (Person buf: list) {
             ps.setString(1, buf.name);
             ps.setString(2, buf.surname);
@@ -326,7 +301,22 @@ public class Database {
         return list;
     }
 
+    public void insertCustomers(ArrayList<Customer> list) throws SQLException {
+        System.out.println("insertProduct_items");
+        PreparedStatement ps = con.prepareStatement("insert into CUSTOMERS(PERSON_ID, POSTCODE, ADDRESS) values (?, ?, ?)");
 
+        for (Customer buf: list) {
+            ps.setLong(1, buf.personId);
+            ps.setInt(2, buf.postCode);
+            ps.setString(3, buf.address);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+    }
 
 
 
@@ -393,6 +383,52 @@ public class Database {
             if (stmt != null) { stmt.close(); }
         }
         return -1;
+    }
+
+    public ArrayList<Product> getProducts() throws SQLException {
+        System.out.println("getProductTypes");
+
+        Statement stmt = null;
+        String query = "SELECT * " +
+                "FROM PRODUCTS ";
+
+        ArrayList<Product> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new Product(rs.getInt("PRODUCT_ID"), rs.getBigDecimal("BARCODE").toBigInteger(), rs.getString("NAME")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
+    }
+
+    public ArrayList<Company> getCompanies() throws SQLException {
+        System.out.println("getCompanies");
+
+        Statement stmt = null;
+        String query = "SELECT * " +
+                "FROM COMPANIES ";
+
+        ArrayList<Company> list = new ArrayList<>();
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                list.add(new Company(rs.getBigDecimal("TIN").toBigInteger(), rs.getString("NAME"), rs.getInt("POSTCODE"), rs.getString("ADDRESS")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return null;
     }
 
     private String niceStr(String s) {

@@ -67,7 +67,7 @@ public class Generator {
         InsertStaff_by_type("брокер", 3);
         InsertStaff_by_type("доставщик", 3);*/
 
-
+        lifeCycle();
         System.out.println("Date : " + startDate.toString());
     }
 
@@ -246,5 +246,91 @@ public class Generator {
         catch (SQLException e ) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private void lifeCycle() {
+        Integer days = settings.getDays();
+        LocalDateTime date = startDate.minusDays(days).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Integer currentDay = 1;
+        ArrayList<Product> products = null;
+
+        try {
+            products = db.getProducts();
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
+
+        while (currentDay <= days) {
+
+            /*
+                Add companies
+            */
+            ArrayList<Company> companies = new ArrayList<>();
+            for (int i = 0; i < settings.getCompanies(); i++) {
+                companies.add(new Company());
+            }
+            try {
+                db.InsertCompanies(companies);
+            }
+            catch (SQLException e ) {
+                System.out.println(e.getMessage());
+            }
+
+            /*
+                Add product items every week
+            */
+
+            if (currentDay % 7 == 0.0 || currentDay == 1) {
+                ArrayList<Company> comp_buf = null;
+                ArrayList<Product_item> product_items = new ArrayList<>();
+
+                try {
+                    comp_buf = db.getCompanies();
+                    comp_buf = Tools.generateRandomArray(comp_buf, 0.3);
+                }
+                catch (SQLException e ) {
+                    System.out.println(e.getMessage());
+                }
+
+                for(Company buf: comp_buf) {
+                    ArrayList<Product> randProducts = Tools.generateRandomArray(products, 0.05);
+                    for(Product buf_2: randProducts) {
+                        product_items.add(new Product_item(buf.tin,buf_2.productId,date.plusDays(days)));
+                    }
+                }
+
+                try {
+                    db.insertProduct_items(product_items);
+                }
+                catch (SQLException e ) {
+                    System.out.println(e.getMessage());
+                }
+
+                System.out.println("Nice");
+            }
+
+            /*
+                Add customers
+            */
+
+            ArrayList<Customer> customers = new ArrayList<>();
+            for (int i = 0; i < settings.getCustomers(); i++) {
+                customers.add(new Customer());
+            }
+
+            try {
+                customers = (ArrayList<Customer>)db.insertPeople(customers);
+                db.insertCustomers(customers);
+            }
+            catch (SQLException e ) {
+                System.out.println(e.getMessage());
+            }
+
+
+            currentDay ++;
+
+        }
+
     }
 }

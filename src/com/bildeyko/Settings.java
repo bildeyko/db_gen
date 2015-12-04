@@ -23,6 +23,11 @@ public class Settings {
 
     private Integer days;
     private Integer products;
+
+    public Integer getCustomers() {
+        return customers;
+    }
+
     private Integer customers;
 
     public DB_settings getDatabase() {

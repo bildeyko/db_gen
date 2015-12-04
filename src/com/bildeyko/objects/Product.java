@@ -18,4 +18,11 @@ public class Product {
         this.type = type;
         barcode = Tools.randomBigInt(new BigInteger("1000000000000"), new BigInteger("9999999999999"));
     }
+
+    public Product (Integer productId, BigInteger barcode, String name) {
+        this.name = name;
+        this.type = null;
+        this.productId = productId;
+        this.barcode = barcode;
+    }
 }

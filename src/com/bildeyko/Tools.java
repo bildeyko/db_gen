@@ -1,6 +1,7 @@
 package com.bildeyko;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -28,5 +29,20 @@ public class Tools {
             text[i] = characters.charAt(rnd.nextInt(characters.length()));
         }
         return new String(text);
+    }
+
+    public static <T> ArrayList<T> generateRandomArray(ArrayList<T> array, Double percent) {
+        Integer num = (int) Math.round(array.size()*percent);
+        Random rand = new Random();
+        ArrayList<T> list = new ArrayList<>();
+
+        while (num > 0) {
+            Integer index = rand.nextInt(array.size());
+            T item = array.get(index);
+            list.add(item);
+            array.remove(index);
+            num--;
+        }
+        return  list;
     }
 }

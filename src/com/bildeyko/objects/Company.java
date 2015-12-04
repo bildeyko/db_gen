@@ -23,4 +23,11 @@ public class Company {
         address = Tools.generateString(120);
         //ThreadLocalRandom.current().nextInt(min, max + 1);
     }
+
+    public Company(BigInteger tin, String name, Integer postCode, String address) {
+        this.tin = tin;
+        this.name = name;
+        this.postCode = postCode;
+        this.address = address;
+    }
 }
