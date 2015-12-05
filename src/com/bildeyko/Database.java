@@ -40,23 +40,6 @@ public class Database {
         con = getDBConnection();
     }
 
-    public void viewTable() throws SQLException {
-
-        Statement stmt = null;
-        String query = "select * from COMPANIES";
-        try {
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            while (rs.next()) {
-                String name = rs.getString("NAME");
-            }
-        } catch (SQLException e ) {
-            System.out.println(e.getMessage());
-        } finally {
-            if (stmt != null) { stmt.close(); }
-        }
-    }
-
     private Connection getDBConnection() {
 
         Connection dbConnection = null;
@@ -108,10 +91,12 @@ public class Database {
         con.commit();
 
         ps.close();
+
+        Stat.companies += list.size();
     }
 
     public void InsertUnits(ArrayList<Unit> list) throws SQLException {
-        System.out.println("InsertUnits");
+        //System.out.println("InsertUnits");
         PreparedStatement ps = con.prepareStatement("insert into UNITS(NAME, SHORT_NAME) values (?, ?)");
 
         for (Unit buf: list) {
@@ -124,10 +109,12 @@ public class Database {
         con.commit();
 
         ps.close();
+
+        Stat.units += list.size();
     }
 
     public void insertStates(ArrayList<String> list) throws SQLException {
-        System.out.println("insertStates");
+        //System.out.println("insertStates");
         PreparedStatement ps = con.prepareStatement("insert into STATES(NAME) values (?)");
 
         for (String buf: list) {
@@ -139,10 +126,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.states += list.size();
     }
 
     public void InsertProductTypes(ArrayList<ProductType> list) throws SQLException {
-        System.out.println("InsertProductTypes");
+        //System.out.println("InsertProductTypes");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCT_TYPES(NAME, UNITS) values (?, ?)");
 
         for (ProductType buf: list) {
@@ -155,10 +143,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.product_types += list.size();
     }
 
     public void insertProducts(ArrayList<Product> list) throws SQLException {
-        System.out.println("insertProducts");
+        //System.out.println("insertProducts");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCTS(BARCODE, NAME, TYPE) values (?, ?, ?)");
 
         for (Product buf: list) {
@@ -172,11 +161,12 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.products += list.size();
     }
 
 
     public void insertPositionTypes(ArrayList<PositionType> list) throws SQLException {
-        System.out.println("insertPositionTypes");
+        //System.out.println("insertPositionTypes");
         PreparedStatement ps = con.prepareStatement("insert into POSITION_TYPES(PERCENT, NAME) values (?, ?)");
 
         for (PositionType buf: list) {
@@ -189,10 +179,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.position_types += list.size();
     }
 
     public void insertPositions(ArrayList<Staff> list) throws SQLException {
-        System.out.println("insertPositions");
+        //System.out.println("insertPositions");
         PreparedStatement ps = con.prepareStatement("insert into POSITIONS(STAFF_ID, POSITION_TYPE_ID, START_TIME) values (?, ?, ?)");
 
         for (Staff buf: list) {
@@ -206,10 +197,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.positions += list.size();
     }
 
     public void insertProduct_items(ArrayList<Product_item> list) throws SQLException {
-        System.out.println("insertProduct_items");
+        //System.out.println("insertProduct_items");
         PreparedStatement ps = con.prepareStatement("insert into PRODUCT_ITEMS(TIN, PRODUCT_ID, SHELF_LIFE, QUANTITY, PRICE) values (?, ?, ?, ?, ?)");
 
         for (Product_item buf: list) {
@@ -225,6 +217,7 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.product_items += list.size();
     }
 
     /*public Integer insertPerson(Person person) throws SQLException {
@@ -242,7 +235,7 @@ public class Database {
     }*/
 
     public ArrayList<? extends Person> insertPeople(ArrayList<? extends Person> list) throws SQLException {
-        System.out.println("insertPeople");
+        //System.out.println("insertPeople");
         PreparedStatement ps = con.prepareStatement("insert into PEOPLE(NAME, SURNAME, DOB) values (?, ?, ?)", new String[]{"PERSON_ID"});
 
         for (Person buf: list) {
@@ -270,11 +263,46 @@ public class Database {
         }//while
 
         ps.close();
+        Stat.people += list.size();
         return list;
     }
 
+    public void insertPhones(ArrayList<? extends Person> list) throws SQLException {
+        //System.out.println("insertPhones");
+        PreparedStatement ps = con.prepareStatement("insert into PHONES(PERSON_ID, PHONE) values (?, ?)");
+
+        for (Person buf: list) {
+            ps.setLong(1,buf.personId);
+            ps.setString(2, buf.phone);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+        Stat.phones += list.size();
+    }
+
+    public void insertEmails(ArrayList<? extends Person> list) throws SQLException {
+       // System.out.println("insertEmails");
+        PreparedStatement ps = con.prepareStatement("insert into EMAIL(PERSON_ID, EMAIL) values (?, ?)");
+
+        for (Person buf: list) {
+            ps.setLong(1,buf.personId);
+            ps.setString(2, buf.email);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+        Stat.email += list.size();
+    }
+
     public ArrayList<Staff> insertStaff(ArrayList<Staff> list) throws SQLException {
-        System.out.println("insertStaff");
+        //System.out.println("insertStaff");
         PreparedStatement ps = con.prepareStatement("insert into STAFF(PERSON_ID, SNILS) values (?, ?)", new String[]{"STAFF_ID"});
 
         for (Staff buf: list) {
@@ -301,11 +329,12 @@ public class Database {
         }//while
 
         ps.close();
+        Stat.staff += list.size();
         return list;
     }
 
     public void insertCustomers(ArrayList<Customer> list) throws SQLException {
-        System.out.println("insertCustomers");
+        //System.out.println("insertCustomers");
         PreparedStatement ps = con.prepareStatement("insert into CUSTOMERS(PERSON_ID, POSTCODE, ADDRESS) values (?, ?, ?)");
 
         for (Customer buf: list) {
@@ -319,10 +348,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.customers += list.size();
     }
 
     public void insertContacts(ArrayList<Contract> list) throws SQLException {
-        System.out.println("insertContacts");
+        //System.out.println("insertContacts");
         PreparedStatement ps = con.prepareStatement("insert into CONTRACTS(CUSTOMER_ID, BROKER_ID, START_TIME, END_TIME, LIMIT_PER_AUCTION) values (?, ?, ?, ?, ?)");
 
         for (Contract buf: list) {
@@ -338,10 +368,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.contracts += list.size();
     }
 
     public Long insertBatch(Batch batch) throws SQLException {
-        System.out.println("insertBatch");
+        //System.out.println("insertBatch");
         PreparedStatement ps = con.prepareStatement("insert into BATCHES(STAFF_ID, TYPE_ID, BUILD_DATE) values (?, ?, ?)", new String[]{"BATCH_ID"});
 
         ps.setLong(1, batch.staffId);
@@ -360,11 +391,12 @@ public class Database {
         }
 
         ps.close();
+        Stat.batches ++;
         return id;
     }
 
     public void insertBatch_items(ArrayList<Batch_item> list) throws SQLException {
-        System.out.println("insertBatch_items");
+        //System.out.println("insertBatch_items");
         PreparedStatement ps = con.prepareStatement("insert into BATCH_ITEMS(PRODITEM_ID, BATCH_ID, QUANTITY) values (?, ?, ?)");
 
         for (Batch_item buf: list) {
@@ -378,10 +410,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.batch_items += list.size();
     }
 
     public void insertAuctions(ArrayList<Auction> list) throws SQLException {
-        System.out.println("insertAuctions");
+        //System.out.println("insertAuctions");
         PreparedStatement ps = con.prepareStatement("insert into AUCTIONS(BATCH_ID, START_TIME, END_TIME) values (?, ?, ?)");
 
         for (Auction buf: list) {
@@ -395,10 +428,11 @@ public class Database {
         con.commit();
 
         ps.close();
+        Stat.auctions += list.size();
     }
 
     public void insertBet(Bet bet) throws SQLException {
-        System.out.println("insertBet");
+        //System.out.println("insertBet");
 
         PreparedStatement ps = null;
 
@@ -415,12 +449,33 @@ public class Database {
             if (ps != null) { ps.close(); }
         }
         ps.close();
+        Stat.bets ++;
+    }
+
+    public void insertDelivery(ArrayList<Delivery> list) throws SQLException {
+        //System.out.println("insertDelivery");
+        PreparedStatement ps = con.prepareStatement("insert into DELIVERY(DELIVERYMAN_ID, AUCTION_ID, STATE_ID, \"DATE\", ACTUAL_DATE)  values (?, ?, ?, ?, ?)");
+
+        for (Delivery buf: list) {
+            ps.setLong(1, buf.staffId);
+            ps.setLong(2, buf.auctionId);
+            ps.setInt(3, buf.stateId);
+            ps.setTimestamp(4, new Timestamp(buf.date.getTime()));
+            ps.setTimestamp(5, new Timestamp(buf.actualDate.getTime()));
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        con.commit();
+
+        ps.close();
+        Stat.delivery += list.size();
     }
 
 
 
     public Integer getUnitId(String fullName) throws SQLException {
-        System.out.println("getUnitId");
+        //System.out.println("getUnitId");
         Statement stmt = null;
         String query = "select UNITS.UNIT_ID " +
                 "from UNITS " +
@@ -441,7 +496,7 @@ public class Database {
     }
 
     public ArrayList<ProductType> getProductTypes() throws SQLException {
-        System.out.println("getProductTypes");
+        //System.out.println("getProductTypes");
 
         Statement stmt = null;
         String query = "SELECT * " +
@@ -464,7 +519,7 @@ public class Database {
     }
 
     public Integer getPosTypeId(String posType) throws SQLException {
-        System.out.println("getPosTypeId");
+        //System.out.println("getPosTypeId");
         Statement stmt = null;
         String query = "select POSITION_TYPES.POSITION_TYPE_ID " +
                 "from POSITION_TYPES " +
@@ -485,7 +540,7 @@ public class Database {
     }
 
     public ArrayList<Product> getProducts() throws SQLException {
-        System.out.println("getProductTypes");
+        //System.out.println("getProducts");
 
         Statement stmt = null;
         String query = "SELECT * " +
@@ -508,7 +563,7 @@ public class Database {
     }
 
     public ArrayList<Company> getCompanies() throws SQLException {
-        System.out.println("getCompanies");
+        //System.out.println("getCompanies");
 
         Statement stmt = null;
         String query = "SELECT * " +
@@ -531,7 +586,7 @@ public class Database {
     }
 
     public ArrayList<Customer> getCustomers() throws SQLException {
-        System.out.println("getCustomers");
+        //System.out.println("getCustomers");
 
         Statement stmt = null;
         String query = "SELECT * " +
@@ -554,7 +609,7 @@ public class Database {
     }
 
     public ArrayList<Staff> getStaff(String type) throws SQLException {
-        System.out.println("getCustomers");
+        //System.out.println("getStaff");
 
         Statement stmt = null;
         String query = "SELECT STAFF.* " +
@@ -579,7 +634,7 @@ public class Database {
     }
 
     public ArrayList<Product_item> getProductItems() throws  SQLException {
-        System.out.println("getProductItems");
+        //System.out.println("getProductItems");
 
         Statement stmt = null;
         String query = "SELECT PRODUCT_ITEMS.PRODITEM_ID, PRODUCT_ITEMS.QUANTITY, PRODUCTS.TYPE, COALESCE(d.sum,0) SUM " +
@@ -607,7 +662,7 @@ public class Database {
     }
 
     public ArrayList<Contract> getContracts(LocalDateTime currentTime) throws  SQLException {
-        System.out.println("getContracts");
+        //System.out.println("getContracts");
 
         PreparedStatement ps = null;
 
@@ -631,7 +686,7 @@ public class Database {
     }
 
     public ArrayList<Auction> getAuctions(LocalDateTime currentTime) throws  SQLException {
-        System.out.println("getAuctions");
+        //System.out.println("getAuctions");
 
         PreparedStatement ps = null;
 
@@ -655,7 +710,7 @@ public class Database {
     }
 
     public double getBetsSum(Long contractId, Long auctionId) throws  SQLException {
-        System.out.println("getBetsSum");
+        //System.out.println("getBetsSum");
 
         PreparedStatement ps = null;
 
@@ -677,6 +732,86 @@ public class Database {
         }
         return 0.0;
     }
+
+    public ArrayList<Auction> getOldAuctions(LocalDateTime currentTime) throws  SQLException {
+        //System.out.println("getOldAuctions");
+
+        PreparedStatement ps = null;
+
+        Instant instant = currentTime.atZone(ZoneId.systemDefault()).toInstant();
+
+        ArrayList<Auction> list = new ArrayList<>();
+        try {
+            ps = con.prepareStatement("SELECT A.AUCTION_ID " +
+                    "FROM AUCTIONS A " +
+                    "LEFT JOIN DELIVERY De " +
+                    "ON A.AUCTION_ID = De.AUCTION_ID " +
+                    "WHERE A.END_TIME <= ? AND De.AUCTION_ID IS NULL");
+            ps.setTimestamp(1, new Timestamp(Date.from(instant).getTime()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new Auction(rs.getLong("AUCTION_ID")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (ps != null) { ps.close(); }
+        }
+        return null;
+    }
+
+    public Integer getStateId(String state) throws SQLException {
+        //System.out.println("getStateId");
+        Statement stmt = null;
+        String query = "select STATES.STATE_ID " +
+                "from STATES " +
+                "WHERE STATES.NAME = " + niceStr(state);
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                Integer id = rs.getInt("STATE_ID");
+                return id;
+            }
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+        return -1;
+    }
+
+    public void clearTable(String name) throws SQLException {
+        Statement stmt = null;
+        String query = "DELETE FROM " + name;
+
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            System.out.println("Cleaned: " + name);
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+    }
+
+    public void commit() throws SQLException {
+        Statement stmt = null;
+        String query = "COMMIT";
+
+        try {
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (stmt != null) { stmt.close(); }
+        }
+    }
+
+
 
     private String niceStr(String s) {
         return "'"+s+"'";

@@ -1,5 +1,8 @@
 package com.bildeyko.objects;
 
+import com.bildeyko.Generator;
+import com.bildeyko.Main;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,7 +25,7 @@ public class Auction {
         startTime = Date.from(instant);
 
         Random rand = new Random();
-        Integer offset = rand.nextInt(30)+7;
+        Integer offset = rand.nextInt(30) + Generator.settings.getAuctionWeeks();
         instant = currentTime.plusDays(offset).atZone(ZoneId.systemDefault()).toInstant();
         endTime = Date.from(instant);
     }

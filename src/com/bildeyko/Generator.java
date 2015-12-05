@@ -4,6 +4,7 @@ import com.bildeyko.objects.*;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Arrays;
@@ -26,50 +27,21 @@ public class Generator {
         startDate = startDate.minusDays(settings.getDays());
 
         db = new Database();
-        try {
-            db.viewTable();
-        }
-        catch (SQLException e ) {
-            System.out.println(e.getMessage());
-        }
 
-        /*Company c1 = new Company();
-        ArrayList<Company> c2 = new ArrayList<>(settings.getCompanies());
-        for (int i = 0; i < settings.getCompanies(); i++) {
-            c2.add(new Company());
-        }
+    }
 
-        try {
-            db.InsertCompanies(c2);
-        }
-        catch (SQLException e ) {
-            System.out.println(e.getMessage());
-        }*/
-
-
-       /* ArrayList<Person> c3 = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            c3.add(new Person());
-        }
-        try {
-            db.insertPeople(c3);
-        }
-        catch (SQLException e ) {
-            System.out.println(e.getMessage());
-        }*/
-
+    public void staticData() {
         InsertUnits();
         InsertProductTypes();
         InsertProducts();
         InsertPositionTypes();
         insertStates();
 
-        InsertStaff_by_type("менеджер", 3);
-        InsertStaff_by_type("брокер", 3);
-        InsertStaff_by_type("доставщик", 3);
+        InsertStaff_by_type("менеджер", settings.managers);
+        InsertStaff_by_type("брокер", settings.brokers);
+        InsertStaff_by_type("доставщик", settings.deliverymen);
 
-        lifeCycle();
-        System.out.println("Date : " + startDate.toString());
+        System.out.println("Static data created");
     }
 
     private void InsertUnits() {
@@ -229,10 +201,11 @@ public class Generator {
                 people.add(new Staff(id,startDate));
             }
             people = (ArrayList<Staff>)db.insertPeople(people);
-            System.out.println("Date : " + startDate.toString());
 
-           people = db.insertStaff(people);
-           db.insertPositions(people);
+            people = db.insertStaff(people);
+            db.insertPhones(people);
+            db.insertEmails(people);
+            db.insertPositions(people);
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
@@ -249,19 +222,21 @@ public class Generator {
         }
     }
 
-    private void lifeCycle() {
+    public void dynamicData() {
         Integer days = settings.getDays();
         LocalDateTime date = startDate.minusDays(days).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Integer currentDay = 1;
         ArrayList<Product> products = null;
         ArrayList<Staff> brokers = null;
-        ArrayList<Staff> menegers = null;
+        ArrayList<Staff> managers = null;
+        ArrayList<Staff> deliverymen = null;
         Random rand = new Random();
 
         try {
             products = db.getProducts();
             brokers = db.getStaff("брокер");
-            menegers = db.getStaff("менеджер");
+            managers = db.getStaff("менеджер");
+            deliverymen = db.getStaff("доставщик");
         }
         catch (SQLException e ) {
             System.out.println(e.getMessage());
@@ -269,7 +244,7 @@ public class Generator {
 
         while (currentDay <= days) {
 
-            System.out.println("*** DAY " + currentDay.toString() + " ***");
+            System.out.println("*** DAY " + currentDay.toString() + " - " + date.toString() + " ***");
 
             /*
                 Add companies
@@ -327,6 +302,8 @@ public class Generator {
 
             try {
                 customers = (ArrayList<Customer>)db.insertPeople(customers);
+                db.insertPhones(customers);
+                db.insertEmails(customers);
                 db.insertCustomers(customers);
 
                 customers = db.getCustomers();
@@ -350,9 +327,9 @@ public class Generator {
                 Add batches
             */
 
-            ArrayList<Staff> menegersRand = Tools.generateRandomArray(menegers, 0.5);
+            ArrayList<Staff> managersRand = Tools.generateRandomArray(managers, 0.5);
             try {
-                for(Staff buf: menegersRand) {
+                for(Staff buf: managersRand) {
                     ArrayList<Auction> auctions = new ArrayList<>();
                     ArrayList<Product_item> items = db.getProductItems();
 
@@ -378,9 +355,37 @@ public class Generator {
                 System.out.println(e.getMessage());
             }
 
+
+            /*
+                Check auctions and add delivery
+            */
+
             try {
-                LocalDateTime dayTime = startDate.withHour(8).withMinute(0).withSecond(0).withNano(0);
-                int windows = 20; // one window every 30 minutes
+                ArrayList<Auction> oldAuctions = db.getOldAuctions(date);
+                if (oldAuctions.size() != 0) {
+                    ArrayList<Delivery> del = new ArrayList<>();
+                    int stateId = db.getStateId("доставлен");
+
+                    for(Auction buf: oldAuctions) {
+                        int index = rand.nextInt(deliverymen.size());
+                        Staff man = deliverymen.get(index);
+
+                        del.add(new Delivery(man.staffId, buf.auctionId, stateId, date));
+                    }
+                    db.insertDelivery(del);
+                }
+            }
+            catch (SQLException e ) {
+                System.out.println(e.getMessage());
+            }
+
+            /*
+                Add bets
+            */
+
+            try {
+                LocalDateTime dayTime = date.withHour(8).withMinute(0).withSecond(0).withNano(0);
+                int windows = 5; // one window every 2 hours
                 for(int i=0; i<=windows; i++) {
                     ArrayList<Contract> contracts = db.getContracts(dayTime);
                     contracts = Tools.generateRandomArray(contracts, 0.2);
@@ -400,7 +405,7 @@ public class Generator {
                         }
 
                     }
-                    dayTime = dayTime.plusMinutes(30);
+                    dayTime = dayTime.plusMinutes(120);
                 }
             }
             catch (SQLException e ) {
@@ -434,5 +439,66 @@ public class Generator {
             }
         }
         return res;
+    }
+
+    public void statistic() {
+        Integer sum = Stat.auctions+Stat.batch_items+Stat.batches+Stat.bets+Stat.companies+
+                Stat.contracts+Stat.customers+Stat.delivery+Stat.email+Stat.people+
+                Stat.phones+Stat.position_types+Stat.positions+Stat.product_items+
+                Stat.product_types+Stat.products+Stat.staff+Stat.states+Stat.units;
+
+        LocalDateTime endDate = LocalDateTime.now();
+
+        System.out.println("*** RESULTS ***");
+        System.out.println("Start time: " + startDate.atZone(ZoneId.systemDefault()).toString());
+        System.out.println("End time: " + endDate.atZone(ZoneId.systemDefault()).toString());
+        System.out.println("Added rows: " + sum.toString());
+        System.out.println("    auctions - " + Stat.auctions.toString());
+        System.out.println("    batch_items - " + Stat.batch_items.toString());
+        System.out.println("    batches - " + Stat.batches.toString());
+        System.out.println("    bets - " + Stat.bets.toString());
+        System.out.println("    companies - " + Stat.companies.toString());
+        System.out.println("    contracts - " + Stat.contracts.toString());
+        System.out.println("    customers - " + Stat.customers.toString());
+        System.out.println("    delivery - " + Stat.delivery.toString());
+        System.out.println("    email - " + Stat.email.toString());
+        System.out.println("    people - " + Stat.people.toString());
+        System.out.println("    phones - " + Stat.phones.toString());
+        System.out.println("    position_types - " + Stat.position_types.toString());
+        System.out.println("    positions - " + Stat.positions.toString());
+        System.out.println("    product_items - " + Stat.product_items.toString());
+        System.out.println("    product_types - " + Stat.product_types.toString());
+        System.out.println("    products - " + Stat.products.toString());
+        System.out.println("    staff - " + Stat.staff.toString());
+        System.out.println("    states - " + Stat.states.toString());
+        System.out.println("    units - " + Stat.units.toString());
+    }
+
+    public void clearTables(){
+        try {
+            db.clearTable("delivery");
+            db.clearTable("states");
+            db.clearTable("bets");
+            db.clearTable("auctions");
+            db.clearTable("contracts");
+            db.clearTable("batch_items");
+            db.clearTable("batches");
+            db.clearTable("positions");
+            db.clearTable("staff");
+            db.clearTable("position_types");
+            db.clearTable("customers");
+            db.clearTable("email");
+            db.clearTable("phones");
+            db.clearTable("people");
+            db.clearTable("product_items");
+            db.clearTable("products");
+            db.clearTable("product_types");
+            db.clearTable("units");
+            db.clearTable("companies");
+            db.commit();
+        }
+        catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        }
     }
 }

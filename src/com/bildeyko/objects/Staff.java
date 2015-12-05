@@ -19,7 +19,6 @@ public class Staff extends Person {
 
     public Staff(Integer positionTypeId, LocalDateTime startTime) {
         super();
-        System.out.println("insertPositionTypes");
         this.positionTypeId = positionTypeId;
 
         Instant instant = startTime.toInstant(ZoneOffset.UTC);

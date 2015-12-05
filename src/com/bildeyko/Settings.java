@@ -42,6 +42,16 @@ public class Settings {
 
     private DB_settings database;
 
+    public Integer getAuctionWeeks() {
+        return auctionWeeks;
+    }
+
+    private  Integer auctionWeeks;
+
+    public Integer brokers;
+    public Integer managers;
+    public Integer deliverymen;
+
     public Settings(String fileName) {
         this.fileName = fileName;
         database = new DB_settings();
@@ -63,6 +73,10 @@ public class Settings {
             this.products = Integer.parseInt(getString("products_at_time",rootElement));
             this.customers = Integer.parseInt(getString("customers_per_day",rootElement));
             this.batchSize = Integer.parseInt(getString("max_batch_size",rootElement));
+            this.auctionWeeks = Integer.parseInt(getString("min_auction_weeks",rootElement));
+            this.brokers = Integer.parseInt(getString("brokers",rootElement));
+            this.deliverymen = Integer.parseInt(getString("deliverymen",rootElement));
+            this.managers = Integer.parseInt(getString("managers",rootElement));
 
             database.host = getString("host",rootElement);
             database.port = Integer.parseInt(getString("port", rootElement));

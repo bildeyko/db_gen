@@ -1,15 +1,45 @@
 <?xml version="1.0"?>
 <settings>
 
-    <host>192.168.1.175</host>
+	<host>192.168.1.175</host>
     <port>1521</port>
     <service_name>orcl</service_name>
     <user>c##bildeyko</user>
     <password>qwerty</password>
 
-    <days>10</days>
-    <companies_per_day>5</companies_per_day>
-    <products_at_time>3</products_at_time>
-    <customers_per_day>2</customers_per_day>
+    <!--<host>127.0.0.1</host>
+    <port>9999</port>
+    <service_name>orbis</service_name>
+    <user>s158245</user>
+    <password>ago025</password>-->
+	
+	<!-- Сколько дней длится эмуляция -->
+    <days>30</days>
+
+	<!-- Сколько компаний приходит каждый день -->
+    <companies_per_day>15</companies_per_day>
+	
+	<!-- Сколько продуктов добавляет одна компания за раз -->
+	<!-- Добавление происходит раз в 7 дней -->
+    <products_at_time>15</products_at_time>
+	
+	<!-- Сколько клиентов приходит каждый день -->
+    <customers_per_day>10</customers_per_day>
+	
+	<!-- Максимальное кол-во продуктов в партии -->
     <max_batch_size>5</max_batch_size>
+
+	<!-- Минимальная продолжительность аукциона -->
+    <min_auction_weeks>3</min_auction_weeks>
+
+    <!-- Static data -->
+
+	<!-- Сколько брокеров работает на бирже -->
+    <brokers>10</brokers>
+	
+	<!-- Сколько менеджеров работает на бирже -->
+    <managers>10</managers>
+	
+	<!-- Сколько доставщиков работает на бирже -->
+    <deliverymen>5</deliverymen>
 </settings>
