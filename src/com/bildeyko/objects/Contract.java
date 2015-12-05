@@ -31,4 +31,9 @@ public class Contract {
 
         limit = rand.nextDouble()*10000;
     }
+
+    public Contract(Long contractId, Double limit) {
+        this.contractId = contractId;
+        this.limit = limit;
+    }
 }

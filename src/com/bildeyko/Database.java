@@ -9,8 +9,11 @@ import oracle.jdbc.pool.OracleDataSource;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.Date;
 
 /**
  * Created by bilde_000 on 22.11.2015.
@@ -394,6 +397,26 @@ public class Database {
         ps.close();
     }
 
+    public void insertBet(Bet bet) throws SQLException {
+        System.out.println("insertBet");
+
+        PreparedStatement ps = null;
+
+        try {
+            ps = con.prepareStatement("insert into BETS(AUCTION_ID, CONTRACT_ID, BET, TIME) values (?, ?, ?, ?)");
+            ps.setLong(1, bet.auctionId);
+            ps.setLong(2, bet.contractId);
+            ps.setDouble(3, bet.bet);
+            ps.setTimestamp(4, new Timestamp(bet.time.getTime()));
+            ResultSet rs = ps.executeQuery();
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (ps != null) { ps.close(); }
+        }
+        ps.close();
+    }
+
 
 
     public Integer getUnitId(String fullName) throws SQLException {
@@ -581,6 +604,78 @@ public class Database {
             if (stmt != null) { stmt.close(); }
         }
         return null;
+    }
+
+    public ArrayList<Contract> getContracts(LocalDateTime currentTime) throws  SQLException {
+        System.out.println("getContracts");
+
+        PreparedStatement ps = null;
+
+        Instant instant = currentTime.atZone(ZoneId.systemDefault()).toInstant();
+
+        ArrayList<Contract> list = new ArrayList<>();
+        try {
+            ps = con.prepareStatement("SELECT * FROM CONTRACTS WHERE END_TIME >= ?");
+            ps.setTimestamp(1, new Timestamp(Date.from(instant).getTime()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new Contract(rs.getLong("CONTRACT_ID"), rs.getDouble("LIMIT_PER_AUCTION")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (ps != null) { ps.close(); }
+        }
+        return null;
+    }
+
+    public ArrayList<Auction> getAuctions(LocalDateTime currentTime) throws  SQLException {
+        System.out.println("getAuctions");
+
+        PreparedStatement ps = null;
+
+        Instant instant = currentTime.atZone(ZoneId.systemDefault()).toInstant();
+
+        ArrayList<Auction> list = new ArrayList<>();
+        try {
+            ps = con.prepareStatement("SELECT * FROM AUCTIONS WHERE END_TIME >= ?");
+            ps.setTimestamp(1, new Timestamp(Date.from(instant).getTime()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new Auction(rs.getLong("AUCTION_ID")));
+            }
+            return list;
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (ps != null) { ps.close(); }
+        }
+        return null;
+    }
+
+    public double getBetsSum(Long contractId, Long auctionId) throws  SQLException {
+        System.out.println("getBetsSum");
+
+        PreparedStatement ps = null;
+
+        try {
+            ps = con.prepareStatement("SELECT AUCTION_ID, sum(BETS.BET) SUM " +
+                    "  FROM BETS " +
+                    "WHERE CONTRACT_ID = ? AND AUCTION_ID = ? " +
+                    "GROUP BY AUCTION_ID");
+            ps.setLong(1, contractId);
+            ps.setLong(2, auctionId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                return rs.getDouble("SUM");
+            }
+        } catch (SQLException e ) {
+            System.out.println(e.getMessage());
+        } finally {
+            if (ps != null) { ps.close(); }
+        }
+        return 0.0;
     }
 
     private String niceStr(String s) {

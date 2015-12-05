@@ -58,7 +58,7 @@ public class Generator {
             System.out.println(e.getMessage());
         }*/
 
-        /*InsertUnits();
+        InsertUnits();
         InsertProductTypes();
         InsertProducts();
         InsertPositionTypes();
@@ -66,7 +66,7 @@ public class Generator {
 
         InsertStaff_by_type("менеджер", 3);
         InsertStaff_by_type("брокер", 3);
-        InsertStaff_by_type("доставщик", 3);*/
+        InsertStaff_by_type("доставщик", 3);
 
         lifeCycle();
         System.out.println("Date : " + startDate.toString());
@@ -269,6 +269,8 @@ public class Generator {
 
         while (currentDay <= days) {
 
+            System.out.println("*** DAY " + currentDay.toString() + " ***");
+
             /*
                 Add companies
             */
@@ -339,8 +341,6 @@ public class Generator {
                 }
                 db.insertContacts(contracts);
 
-                System.out.println("Nice");
-
             }
             catch (SQLException e ) {
                 System.out.println(e.getMessage());
@@ -350,10 +350,10 @@ public class Generator {
                 Add batches
             */
 
-            ArrayList<Auction> auctions = new ArrayList<>();
             ArrayList<Staff> menegersRand = Tools.generateRandomArray(menegers, 0.5);
             try {
                 for(Staff buf: menegersRand) {
+                    ArrayList<Auction> auctions = new ArrayList<>();
                     ArrayList<Product_item> items = db.getProductItems();
 
                     Integer index = rand.nextInt(items.size());
@@ -367,9 +367,41 @@ public class Generator {
                     ArrayList<Batch_item> newItems = selectProdItems(items, batchId, num,item.type);
                     db.insertBatch_items(newItems);
 
+                    /*
+                        Add auctions
+                    */
                     db.insertAuctions(auctions);
                 }
 
+            }
+            catch (SQLException e ) {
+                System.out.println(e.getMessage());
+            }
+
+            try {
+                LocalDateTime dayTime = startDate.withHour(8).withMinute(0).withSecond(0).withNano(0);
+                int windows = 20; // one window every 30 minutes
+                for(int i=0; i<=windows; i++) {
+                    ArrayList<Contract> contracts = db.getContracts(dayTime);
+                    contracts = Tools.generateRandomArray(contracts, 0.2);
+
+                    //System.out.println("Nice");
+                    for(Contract buf: contracts) {
+
+                        ArrayList<Auction> auctions = Tools.generateRandomArray(db.getAuctions(dayTime),0.2);
+                        for(Auction buf2: auctions) {
+                            Double sum = db.getBetsSum(buf.contractId, buf2.auctionId);
+                            Double diff = buf.limit - sum;
+
+                            if (diff > 10.0) {
+                                Double bet = 1 + (diff - 1) * rand.nextDouble();
+                                db.insertBet(new Bet(buf2.auctionId, buf.contractId, bet, dayTime));
+                            }
+                        }
+
+                    }
+                    dayTime = dayTime.plusMinutes(30);
+                }
             }
             catch (SQLException e ) {
                 System.out.println(e.getMessage());

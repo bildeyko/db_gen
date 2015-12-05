@@ -26,4 +26,8 @@ public class Auction {
         instant = currentTime.plusDays(offset).atZone(ZoneId.systemDefault()).toInstant();
         endTime = Date.from(instant);
     }
+
+    public Auction (Long auctionId) {
+        this.auctionId = auctionId;
+    }
 }
